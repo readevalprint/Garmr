@@ -12,16 +12,19 @@ def main():
      author = "David Burns, Yvan Boily",
      author_email = "dburns at mozilladotcom",
      description='A tool for testing a web application for basic security holes',
-     keywords = "example documentation tutorial",
-     url = "http://packages.python.org/an_example_pypi_project",
+     url = "https://github.com/AutomatedTester/Garmr",
      packages=['Garmr'],
      long_description=read('README.md'),
      entry_points = make_entry_points(),
-     classifiers=[
-         "Development Status :: 3 - Alpha",
-         "Topic :: Utilities",
- 	'License :: OSI Approved :: Mozilla Public License 1.1 (MPL 1.1)',
-     ],
+     classifiers=['Development Status :: 3 - Alpha',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: Mozilla Public License 1.1 (MPL 1.1)',
+        'Operating System :: POSIX',
+        'Operating System :: Microsoft :: Windows',
+        'Operating System :: MacOS :: MacOS X',
+        'Topic :: Software Development :: Testing',
+        'Topic :: Software Development :: Libraries',
+        'Programming Language :: Python'],
      install_requires= ['requests>=0.6.2']
  )
 
