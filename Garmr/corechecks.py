@@ -62,20 +62,27 @@ class XFrameOptionsPresent(PassiveTest):
             result = self.result("Pass", "X-Frame-Options header present.", response.headers[xfoheader])
         return result
 
-class RobotsTest(ActiveTest):
+class Http200Check(ActiveTest):
     run_passives = True
-    description = "Check for the presence of a robots.txt file. If save_contents is true, the contents will be saved."
-    config = {"save_contents" : "False"}
+    description = "Make a GET request to the specified URL, reporting success only on a 200 response without following redirects"
     def do_test(self, url):
-        u = urlparse(url)
-        roboturl="%s://%s/robots.txt" % (u.scheme, u.netloc)
-        response = requests.get(roboturl)
+        response = get_url(url, False)
         if response.status_code == 200:
-            result = self.result("Pass", "A robots.txt file is present on the server", 
-                                 response.content if self.config["save_contents"].lower() == "true" else None)
+            result = self.result("Pass", "The request returned an HTTP 200 response.", None)
         else:
-            result = self.result("Fail", "No robots.txt file was found.", None)
-        return (result, response);
+            result = self.result("Fail", "The response code was %s" % response.status_code, None)
+	return (result, response)
+
+class WebTouch(ActiveTest):
+     run_passives = True
+     description = "Make a GET request to the specified URL, and check for a 200 response after resolving redirects."
+     def do_test(self, url):
+         response = requests.get(url)
+         if response.status_code == 200:
+             result = self.result("Pass", "The request returned an HTTP 200 response.", None)
+         else:
+             result = self.result("Fail", "The response code was %s" % response.status_code, None)
+         return (result, response)
     
 class StsUpgradeCheck(ActiveTest):
     insecure_only = True
@@ -117,9 +124,10 @@ class StsUpgradeCheck(ActiveTest):
 def configure(scanner):
     if isinstance(scanner, Scanner) == False:
         raise Exception("Cannot configure a non-scanner object!")
+    scanner.register_check(Http200Check())
+    scanner.register_check(WebTouch())
     scanner.register_check(StrictTransportSecurityPresent())
     scanner.register_check(XFrameOptionsPresent())
-    scanner.register_check(RobotsTest())
     scanner.register_check(StsUpgradeCheck())
     scanner.register_check(HttpOnlyAttributePresent())
     scanner.register_check(SecureAttributePresent())

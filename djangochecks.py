@@ -1,6 +1,6 @@
 from urlparse import urlparse
 import requests
-from scanner import ActiveTest, PassiveTest, Scanner, get_url
+from Garmr.scanner import ActiveTest, PassiveTest, Scanner, get_url
 
 
 class AdminAvailable(ActiveTest):

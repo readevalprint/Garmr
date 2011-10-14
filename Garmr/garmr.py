@@ -2,18 +2,22 @@ import argparse
 from scanner import ActiveTest, PassiveTest, Scanner
 import corechecks
 from reporter import Reporter
-import sys
+import os, sys
 import traceback
 
 def main():
+    # Include current path in case we attempt to load modules.
+    sys.path.append(os.getcwd())
+
     parser = argparse.ArgumentParser("Runs a set of tests against the set of provided URLs")
     parser.add_argument("-u", "--url", action="append", dest="targets", help="Add a target to test")
     parser.add_argument("-f", "--target-file", action="append", dest="target_files", help="File with URLs to test")
 
-    parser.add_argument("-m", "--module", action="append", default = ["corechecks"], dest="modules", help="Load an extension module")
+    parser.add_argument("-m", "--module", action="append", default = [], dest="modules", help="Load an extension module")
+    parser.add_argument("-D", "--disable-core", action="store_true", default = False, dest="disable_core", help="Disable corechecks")
     parser.add_argument("-p", "--force-passive", action="store_true", default=False, dest="force_passives", help ="Force passives to be run for each active test")
     parser.add_argument("-d", "--dns", action="store_false", default=True, dest="resolve_target", help ="Skip DNS resolution when registering a target")
-    parser.add_argument("-r", "--report", action="store", default="reporter.AntXmlReporter", dest="report",help="Load a reporter e.g. -r reporter.AntXmlReporter")
+    parser.add_argument("-r", "--report", action="store", default="xml", dest="report",help="Load a reporter e.g. -r reporter.AntXmlReporter")
     parser.add_argument("-o", "--output", action="store", default="garmr-results.xml", dest="output", help="Default output is garmr-results.xml")
     parser.add_argument("-c", "--check", action="append", dest="opts", help="Set a parameter for a check (check:opt=value)" )
     parser.add_argument("-e", "--exclude", action="append", dest="exclusions", help="Prevent a check from being run/processed")
@@ -43,6 +47,10 @@ def main():
             except:
                 Scanner.logger.error("Unable to process the target list in: %s", targets)
     
+    # Load built-in modules if required.
+    if args.disable_core == False:
+		corechecks.configure(scanner)
+		
     # Configure modules.
     # TODO: change the module loading to scan the list of classes in a module and automagically 
     #       detect any tests defined.

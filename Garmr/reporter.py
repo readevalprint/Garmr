@@ -40,8 +40,6 @@ class DetailReporter(Reporter):
     def end_report(self):
         return "This reporter should emit an XML report that includes all of the the details for each test, including captured data"
     
-Reporter.reporters['detail'] = DetailReporter()
-        
 class AntXmlReporter(Reporter):
     
     def __init__(self):
@@ -74,7 +72,8 @@ class AntXmlReporter(Reporter):
     def write_active(self, test, result):
         self.states[result["state"]] += 1
         self.checks += 1
-        module, check = ("%s" % test ).split('.')
+	print test
+        module, check = ("%s" % test ).split('.')[-2:]
         self.lines += '\t\t<testcase classname="%s" name="%s" time="%s"' % (module, check, result["duration"])
         if result["state"] == "Pass":
             self.lines += " />\n"
@@ -88,7 +87,7 @@ class AntXmlReporter(Reporter):
     def write_passive(self, test, result):
         self.states[result["state"]] += 1
         self.checks += 1
-        module, check = ("%s" % test ).split('.')
+        module, check = ("%s" % test ).split('.')[-2:]
         self.lines += '\t\t<testcase classname="%s" name="%s" time="%s"' % (module, check, result["duration"])
         if result["state"] == "Pass":
             self.lines += " />\n"
