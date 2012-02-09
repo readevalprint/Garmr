@@ -12,6 +12,7 @@ def main():
     parser = argparse.ArgumentParser("Runs a set of tests against the set of provided URLs")
     parser.add_argument("-u", "--url", action="append", dest="targets", help="Add a target to test")
     parser.add_argument("-f", "--target-file", action="append", dest="target_files", help="File with URLs to test")
+    parser.add_argument("-S", "--new-sessions", action="store_true", default=False, dest="new_sessions", help="Create new Session for each test")
 
     parser.add_argument("-m", "--module", action="append", default = [], dest="modules", help="Load an extension module")
     parser.add_argument("-D", "--disable-core", action="store_true", default = False, dest="disable_core", help="Disable corechecks")
@@ -22,19 +23,28 @@ def main():
     parser.add_argument("-c", "--check", action="append", dest="opts", help="Set a parameter for a check (check:opt=value)" )
     parser.add_argument("-e", "--exclude", action="append", dest="exclusions", help="Prevent a check from being run/processed")
     parser.add_argument("--save", action="store", dest="dump_path", help="Write out a configuration file based on parameters (won't run scan)")
-    
+
     args = parser.parse_args()
     scanner = Scanner()
-    
+
     scanner.force_passives = args.force_passives
     scanner.resolve_target = args.resolve_target
     scanner.output = args.output
-     
+
+
+
+    # Configure new-ssion item
+    if args.new_sessions:
+        Scanner.logger.info('Enforcing new sessions for each test')
+        # for each test, not for
+        ActiveTest.new_session = True
+
+
     # Start building target list.
     if args.targets != None:
         for target in args.targets:
             scanner.register_target(target)
-        
+
     # Add targets from files to the list.
     if args.target_files != None:
         for targets in args.target_files:
@@ -46,13 +56,13 @@ def main():
                         scanner.register_target(t)
             except:
                 Scanner.logger.error("Unable to process the target list in: %s", targets)
-    
+
     # Load built-in modules if required.
     if args.disable_core == False:
 		corechecks.configure(scanner)
-		
+
     # Configure modules.
-    # TODO: change the module loading to scan the list of classes in a module and automagically 
+    # TODO: change the module loading to scan the list of classes in a module and automagically
     #       detect any tests defined.
     if args.modules != None:
         for module in args.modules:
@@ -63,7 +73,7 @@ def main():
             except Exception, e:
                 Scanner.logger.fatal("Unable to load the requested module [%s]: %s", module, e)
                 quit()
-                
+
     # Set up the reporter (allow it to load from modules that are configured)
     try:
         reporter = args.report.split('.')
@@ -77,12 +87,12 @@ def main():
     except Exception, e:
         Scanner.logger.fatal("Unable to use the reporter class [%s]: %s", args.report, e)
         quit()
-        
+
     # Disable excluded checks.
     if args.exclusions != None:
         for exclude in args.exclusions:
             scanner.disable_check(exclude)
-    
+
     # Configure checks
     if args.opts != None:
         for opt in args.opts:
@@ -92,13 +102,13 @@ def main():
                 scanner.configure_check(check, key, value)
             except Exception, e:
                 Scanner.logger.fatal("Invalid check option: %s (%s)", opt, e)
-                
+
     if args.dump_path != None:
         scanner.save_configuration(args.dump_path)
         return
-    
+
     scanner.run_scan()
-    
-    
+
+
 if __name__ == "__main__":
     main()

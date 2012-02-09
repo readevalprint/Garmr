@@ -1,6 +1,6 @@
 from urlparse import urlparse
 import requests
-from Garmr.scanner import ActiveTest, PassiveTest, Scanner, get_url
+from Garmr.scanner import ActiveTest, PassiveTest, Scanner
 
 
 class RobotsTest(ActiveTest):
@@ -10,9 +10,10 @@ class RobotsTest(ActiveTest):
     def do_test(self, url):
         u = urlparse(url)
         roboturl="%s://%s/robots.txt" % (u.scheme, u.netloc)
-        response = requests.get(roboturl)
+        sess = self.sessions[self.url]
+        response = sess.get(roboturl)
         if response.status_code == 200:
-            result = self.result("Pass", "A robots.txt file is present on the server", 
+            result = self.result("Pass", "A robots.txt file is present on the server",
                                  response.content if self.config["save_contents"].lower() == "true" else None)
         else:
             result = self.result("Fail", "No robots.txt file was found.", None)
