@@ -189,6 +189,9 @@ class CSPHeaderCheck(ActiveTest):
 
         sess = self.sessions[self.url]
         response = sess.get(url, allow_redirects=False)
+
+        # Fail is default.
+        result = self.result('Fail', 'No %s or %s in headers' % (cspheader, csproheader), None)
         if cspheader in response.headers or csproheader in response.headers:
             if cspheader in response.headers:
                 h = response.headers[cspheader]
@@ -198,8 +201,6 @@ class CSPHeaderCheck(ActiveTest):
             if harr[0].lower() == 'policy-uri':
                 result = self.result('Pass', 'CSP Header present and points to a policy file', None)
                 #XXX is this line correct here??
-        else:
-            result = self.result('Fail', 'No %s or %s in headers' % (cspheader, csproheader), None)
         return (result, response)
 
 
